@@ -8,10 +8,8 @@ class _BaseCampLabel extends StatelessWidget {
     return BlocBuilder<MainScreenBloc, MainScreenState>(
       builder: (context, state) {
         final double indexOfPage = math.max(0, 4 * state.page - 3);
-        return Positioned(
-          right: 22 * indexOfPage,
-          top: (MediaQuery.of(context).size.height * 0.629) + 50,
-          width: (MediaQuery.of(context).size.width - 80) / 3,
+        return AnimatedBuilder(
+          animation: state.animationController,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,6 +38,19 @@ class _BaseCampLabel extends StatelessWidget {
               ),
             ],
           ),
+          builder: (context, child) {
+            return Positioned(
+              right: 22 * indexOfPage,
+              top: (1 - (state.animationController.value)) *
+                  ((MediaQuery.of(context).size.height * 0.629) + 50),
+              width: (MediaQuery.of(context).size.width - 80) / 3,
+              child: Padding(
+                padding:
+                    EdgeInsets.only(top: 117 * state.animationController.value),
+                child: child!,
+              ),
+            );
+          },
         );
       },
     );

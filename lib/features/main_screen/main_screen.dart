@@ -24,14 +24,24 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animationController;
   late final PageController _pageController;
   late final MainScreenBloc _mainScreenBloc;
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
-    _mainScreenBloc = MainScreenBloc(pageController: _pageController);
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _mainScreenBloc = MainScreenBloc(
+      pageController: _pageController,
+      animationController: _animationController,
+      maxHeight: WidgetsBinding.instance.window.physicalSize.height * 0.175,
+    );
     _pageController.addListener(() {
       _mainScreenBloc.add(
         PageMovedEvent(
@@ -43,35 +53,54 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider<MainScreenBloc>(
       create: (context) => _mainScreenBloc,
       child: Scaffold(
-        body: SafeArea(
-          bottom: false,
-          child: Stack(
-            alignment: Alignment.centerLeft,
-            children: [
-              PageView(
-                padEnds: false,
-                controller: _pageController,
-                physics: const ClampingScrollPhysics(),
-                children: const [
-                  LeopardScreen(),
-                  VultuerScreen(),
-                ],
-              ),
-              const _LeopardImage(),
-              const _VultureImage(),
-              const _AppBar(),
-              const _BottomRow(),
-              const _TitleArrow(),
-              const _TravelDetailsDescription(),
-              const _StartCampLabel(),
-              const _BaseCampLabel(),
-              const _DistanceLabel(),
-              const _TravelDotes(),
-            ],
+        body: GestureDetector(
+          onVerticalDragEnd: (details) {
+            if (_pageController.page == 1) {
+              _mainScreenBloc.add(VerticalDragEndEvent(details));
+            }
+          },
+          onVerticalDragUpdate: (details) {
+            if (_pageController.page == 1) {
+              _mainScreenBloc.add(VerticalDragUpdateEvent(details));
+            }
+          },
+          child: SafeArea(
+            bottom: false,
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                PageView(
+                  padEnds: false,
+                  controller: _pageController,
+                  physics: const ClampingScrollPhysics(),
+                  children: const [
+                    LeopardScreen(),
+                    VultuerScreen(),
+                  ],
+                ),
+                const _LeopardImage(),
+                const _VultureImage(),
+                const _AppBar(),
+                const _BottomRow(),
+                _TitleArrow(animationController: _animationController),
+                const _TravelDetailsDescription(),
+                const _StartCampLabel(),
+                const _BaseCampLabel(),
+                const _DistanceLabel(),
+                const _TravelDotes(),
+              ],
+            ),
           ),
         ),
       ),

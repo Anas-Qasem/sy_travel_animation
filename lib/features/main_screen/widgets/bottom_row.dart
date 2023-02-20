@@ -21,7 +21,10 @@ class _BottomRow extends StatelessWidget {
                       padding: EdgeInsets.zero,
                       foregroundColor: AppAssets.colors.lightGrey,
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      state.animationController.forward();
+                      context.read<MainScreenBloc>().add(const OpenMapEvent());
+                    },
                     child: const Text(
                       "ON MAP",
                       style: TextStyle(color: Colors.white),
